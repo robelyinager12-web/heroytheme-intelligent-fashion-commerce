@@ -1,0 +1,89 @@
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  imageUrl    String?
+  parentId    String?
+  parent      Category?  @relation("CategoryToSubcategories", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToSubcategories")
+  products    Product[]
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  logoUrl     String?
+  description String?
+  products    Product[]
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("brands")
+}
+
+model Product {
+  id             String           @id @default(cuid())
+  name           String
+  slug           String           @unique
+  description    String
+  basePrice      Decimal          @db.Decimal(10, 2)
+  compareAtPrice Decimal?         @db.Decimal(10, 2)
+  sku            String           @unique
+  sellerId       String
+  seller         User             @relation(fields: [sellerId], references: [id])
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  brandId        String?
+  brand          Brand?           @relation(fields: [brandId], references: [id])
+  images         ProductImage[]
+  variants       ProductVariant[]
+  isActive       Boolean          @default(true)
+  isFeatured     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([sellerId])
+  @@index([isActive])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  publicId  String
+  altText   String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size         String?
+  color        String?
+  stock        Int      @default(0)
+  priceOverride Decimal? @db.Decimal(10, 2)
+  sku          String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([productId])
+  @@map("product_variants")
+}
