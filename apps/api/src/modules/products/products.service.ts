@@ -82,11 +82,7 @@ export async function createProduct(
   input: CreateProductInput,
   seller: RequestingUser,
 ): Promise<ProductDetail> {
-  const [slugTaken, skuTaken] = await Promise.all([
-    productsRepository.findBySlugOnly(input.slug),
-    productsRepository.findById(input.sku), // cheap guard; real uniqueness enforced by @unique in schema
-  ]);
-
+  const slugTaken = await productsRepository.findBySlugOnly(input.slug);
   if (slugTaken) {
     throw new Error("SLUG_ALREADY_EXISTS");
   }
